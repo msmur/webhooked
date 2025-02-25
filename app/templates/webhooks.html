@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webhooks</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script>
+        const webhooks = [];
+        let searchTerm = null;
+
+        let page = 1;
+        let isLoading = false;
+        const limit = 50;
+
+        let hasMore = true;
+
+        function formatDate(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+
+        function debounce(func, delay) {
+            let timer;
+            return function (...args) {
+                clearTimeout(timer);
+                timer = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+
+        function showDetails(webhookId) {
+            const detailsPane = document.getElementById("details-pane");
+
+            const webhook = webhooks.find(w => w.id === webhookId);
+            if (webhook) {
+                detailsPane.innerHTML = `
+                    <h2>Webhook Details</h2>
+                    <p><strong>ID:</strong> ${webhook.id}</p>
+                    <p><strong>Hook ID:</strong> ${webhook.hook_id}</p>
+                    <p><strong>Created At:</strong> ${formatDate(webhook.created_at)}</p>
+                    <p><strong>Correlation Value:</strong> ${webhook.correlation_value}</p>
+
+
+                    ${createCodeBlock("Payload", webhook.payload)}
+                    ${createCodeBlock("Headers", webhook.headers)}
+                `;
+            }
+
+            Prism.highlightAll();
+        }
+
+        async function loadMoreWebhooks(searchTerm = '') {
+            if (isLoading) return;
+            isLoading = true;
+
+            let url = `/api/hooks/{{ hook_id }}/webhooks?page=${page}&limit=${limit}`;
+
+            if (searchTerm) {
+                url += `&search=${encodeURIComponent(searchTerm)}`;
+            }
+
+            const response = await fetch(url);
+            const parsed = await response.json();
+            const webhookData = parsed.data;
+
+            if (page === 1) {
+                document.getElementById("webhook-list").innerHTML = ""; // Clear list on new search
+            }
+
+            webhooks.push(...webhookData)
+
+            const listPane = document.getElementById("webhook-list");
+            webhookData.forEach(webhook => {
+                const item = document.createElement("div");
+                item.classList.add("webhook-item");
+                item.setAttribute("data-webhook-id", webhook.id);
+                item.setAttribute("data-correlation-value", webhook.correlation_value);
+                item.innerHTML = `
+                <strong>ID: ${webhook.id}</strong><br>
+                <i>correlation value: ${webhook.correlation_value}</i><br>
+                <i>created at: ${new Date(webhook.created_at).toLocaleString()}</i>
+            `;
+                item.onclick = () => showDetails(webhook.id);
+                listPane.appendChild(item);
+            });
+
+            // Update count display
+            document.getElementById("webhook-count").textContent =
+                `Showing ${webhooks.length} of ${parsed.count} webhooks`;
+
+            page++;  // Move to the next page for future requests
+            isLoading = false;
+        }
+
+        async function searchWebhooks() {
+            page = 1;  // Reset pagination for search
+            webhooks.length = 0;  // Clear webhooks list on new search
+            searchTerm = document.getElementById('search-box').value;
+            await loadMoreWebhooks(searchTerm);
+        }
+
+        const debouncedSearch = debounce(searchWebhooks, 500);
+
+        function createCodeBlock(title, jsonData) {
+            const jsonString = JSON.stringify(jsonData, null, 2);
+            return `
+                <p style='text-align: center;'><strong>${title}</strong></p>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyToClipboard(this)">Copy</button>
+                    <pre><code class="language-json">${jsonString}</code></pre>
+                </div>
+`;
+        }
+
+        function copyToClipboard(button) {
+            const codeBlock = button.nextElementSibling.textContent; // Get JSON text
+            navigator.clipboard.writeText(codeBlock).then(() => {
+                button.textContent = "Copied!";
+                setTimeout(() => (button.textContent = "Copy"), 2000); // Reset text after 2s
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            document.getElementById("list-pane").addEventListener("scroll", function () {
+                if (this.scrollTop + this.clientHeight >= this.scrollHeight - 10) {
+                    loadMoreWebhooks(searchTerm);
+                }
+            });
+
+            document.getElementById('search-box').addEventListener('input', debouncedSearch);
+
+            await loadMoreWebhooks();  // Load webhooks on page load
+        });
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+        }
+
+        #list-pane {
+            width: 30%;
+            overflow-y: auto;
+            border-right: 1px solid #ccc;
+            padding: 10px;
+        }
+
+        #details-pane {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto; /* Enables independent scrolling */
+            max-height: 100vh; /* Prevents it from growing indefinitely */
+        }
+
+        .code-container {
+            font-size: 0.9rem;
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .copy-button:hover {
+            background: #666;
+        }
+
+        .webhook-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .webhook-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        #search-box {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+
+<div id="list-pane">
+    <h2>Webhooks</h2>
+    <label for="search-box"></label>
+    <input type="text" id="search-box" placeholder="Search Webhooks by Correlation Value"/>
+    <p id="webhook-count">Showing 0 of 0 webhooks</p>
+    <div id="webhook-list"></div>
+</div>
+<div id="details-pane">
+    <h2>Select a webhook to view details</h2>
+</div>
+</body>
+</html>

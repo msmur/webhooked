@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hooks</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        .hooks-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .hooks-list li {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .hooks-list li a {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        .hooks-list li a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Hooks</h1>
+    <ul class="hooks-list">
+        {% for hook in hooks %}
+        <li>
+            <a href="/hooks/{{ hook.id }}">{{ hook.name }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+</body>
+</html>
