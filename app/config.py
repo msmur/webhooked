@@ -1,12 +1,10 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+import os
+from dotenv import load_dotenv
 
+# Load environment variables from .env
+load_dotenv()
 
-class Settings(BaseSettings):
-    DB_USERNAME: str
-    DB_PASSWORD: str
-    DB_HOST: str
-    DB_PORT: int
-    DB_DATABASE: str
-    DB_DRIVER: str
-
-    model_config = SettingsConfigDict(env_file=".env")
+DB_CONNECTION_STRING = os.getenv("DB_CONNECTION_STRING")
+API_KEY = os.getenv("API_KEY")
+APP_ENVIRONMENT = os.getenv("APP_ENVIRONMENT")
+IS_DEVELOPMENT = APP_ENVIRONMENT == "DEVELOPMENT"

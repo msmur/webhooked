@@ -20,34 +20,72 @@
             margin: auto;
         }
 
+        #search-box {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+
         .hooks-list {
             list-style-type: none;
             padding: 0;
         }
 
         .hooks-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             padding: 10px;
             border-bottom: 1px solid #ddd;
         }
 
-        .hooks-list li a {
+        .hook-name a {
             text-decoration: none;
             color: #007bff;
             font-weight: bold;
         }
 
-        .hooks-list li a:hover {
+        .hook-name a:hover {
             text-decoration: underline;
         }
+
+        .created-at {
+            color: #666;
+            font-size: 0.9em;
+        }
     </style>
+    <script>
+        function searchHooks() {
+            const searchTerm = document.getElementById('search-box').value.toLowerCase();
+            const hooks = document.querySelectorAll('.hooks-list li');
+
+            hooks.forEach(hook => {
+                const hookName = hook.querySelector('.hook-name a').textContent.toLowerCase();
+                if (hookName.includes(searchTerm)) {
+                    hook.style.display = "flex";
+                } else {
+                    hook.style.display = "none";
+                }
+            });
+        }
+    </script>
 </head>
 <body>
 <div class="container">
     <h1>Hooks</h1>
+    <input type="text" id="search-box" oninput="searchHooks()" placeholder="Search hooks...">
     <ul class="hooks-list">
         {% for hook in hooks %}
         <li>
-            <a href="/hooks/{{ hook.id }}">{{ hook.name }}</a>
+            <span class="hook-name">
+                <a href="/hooks/{{ hook.id }}">{{ hook.name }}</a>
+            </span>
+            <span class="created-at">
+                {{ hook.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+            </span>
         </li>
         {% endfor %}
     </ul>

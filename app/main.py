@@ -2,14 +2,25 @@ from datetime import datetime
 from fastapi import FastAPI, Depends, Path
 from fastapi.templating import Jinja2Templates
 from fastapi.requests import Request
+
 from app.database import get_db
 from sqlalchemy.orm import Session
 
 from app.hooks import router as hooks_router
 from app.webhooks import router as webhooks_router
 from app.hooks.repository import get_all_hooks
+from app.logger import logger
 
 app = FastAPI()
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    logger.info(f"Received request: {request.method} {request.url}")
+    response = await call_next(request)
+    logger.info(f"Response status: {response.status_code}")
+    return response
+
 
 templates = Jinja2Templates(directory="app/templates")
 

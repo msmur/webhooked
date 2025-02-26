@@ -7,11 +7,18 @@ from .repository import insert_webhook, get_by_hook_id, get_by_correlation_value
 from .webhook_id import WebhookId
 from ..hooks import HookId
 from ..hooks.repository import get_hook_or_throw
+from ..middleware.auth import verify_api_key
 
 router = APIRouter(prefix="/hooks/{hook_id}/webhooks", tags=["Webhooks"])
 
 
-@router.post("", summary="", description="", response_model=WebhookResponse)
+@router.post(
+    "",
+    summary="",
+    description="",
+    response_model=WebhookResponse,
+    dependencies=[Depends(verify_api_key)],
+)
 async def receive_webhook(
     request: Request,
     hook_id: str = Path(..., title="The Hook ID"),
@@ -58,17 +65,6 @@ async def receive_webhook(
         correlation_value=saved_webhook.correlation_value,
         created_at=saved_webhook.created_at,
     )
-
-
-#
-# @router.get("", summary="", description="", response_model=list[Webhook])
-# async def get_webhooks_by_correlation_value(
-#     hook_id: str,
-#     correlation_value: str,
-#     db: Session = Depends(get_db),
-# ):
-#     webhooks = get_webhooks_by_correlation_value(hook_id, correlation_value, db)
-#     return webhooks
 
 
 @router.get("", summary="", description="", response_model=WebhookListResponse)

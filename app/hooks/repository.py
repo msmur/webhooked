@@ -28,5 +28,7 @@ def get_hook_or_throw(hook_id: str, db: Session) -> Hook:
 
 
 def get_all_hooks(db: Session) -> List[Hook]:
-    hooks: List[HookEntity] = db.query(HookEntity).all()
+    hooks: List[HookEntity] = (
+        db.query(HookEntity).order_by(HookEntity.created_at.desc()).all()
+    )
     return [entity_to_model(hook) for hook in hooks]

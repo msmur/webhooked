@@ -9,6 +9,8 @@ from app.hooks.repository import insert_hook
 from app.hooks.model import Hook, HookCreate
 from fastapi import APIRouter, HTTPException, Body
 
+from app.middleware.auth import verify_api_key
+
 # Initialize router with a prefix
 router = APIRouter(prefix="/hooks", tags=["Hooks"])
 
@@ -19,6 +21,7 @@ router = APIRouter(prefix="/hooks", tags=["Hooks"])
     summary="Create a Webhook",
     description="Create a new webhook with the given details.",
     response_model=Hook,
+    dependencies=[Depends(verify_api_key)],
 )
 async def create_hook(
     hook: HookCreate = Body(..., title="Hook Creation Params"),
