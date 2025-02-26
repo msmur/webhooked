@@ -109,7 +109,7 @@
             await loadMoreWebhooks(searchTerm);
         }
 
-        const debouncedSearch = debounce(searchWebhooks, 500);
+        const debouncedSearch = debounce(searchWebhooks, 300);
 
         function createCodeBlock(title, jsonData) {
             const jsonString = JSON.stringify(jsonData, null, 2);
