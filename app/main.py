@@ -22,13 +22,13 @@ ALEMBIC_CONFIG = Config("alembic.ini")
 # Function to run migrations
 def run_migrations():
     command.upgrade(ALEMBIC_CONFIG, "head")
+    print("Migrations ran successfully.")
 
 
 # Create a lifespan function for FastAPI
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     run_migrations()
-    print("Migrations ran successfully.")
     yield
     print("Application is shutting down.")
 
