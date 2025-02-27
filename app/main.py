@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.hooks import router as hooks_router
 from app.webhooks import router as webhooks_router
+from app.healthcheck import router as healthcheck_router
 from app.hooks.repository import get_all_hooks
 from app.logger import logger
 from contextlib import asynccontextmanager
@@ -74,6 +75,8 @@ async def display_webhooks(
         {"request": request, "hook_id": hook_id},
     )
 
+
+app.include_router(healthcheck_router, prefix="/api")
 
 app.include_router(hooks_router, prefix="/api")
 
