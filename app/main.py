@@ -3,6 +3,8 @@ from fastapi import FastAPI, Depends, Path
 from fastapi.templating import Jinja2Templates
 from fastapi.requests import Request
 
+from alembic import command
+from alembic.config import Config
 from app.database import get_db
 from sqlalchemy.orm import Session
 
@@ -10,8 +12,28 @@ from app.hooks import router as hooks_router
 from app.webhooks import router as webhooks_router
 from app.hooks.repository import get_all_hooks
 from app.logger import logger
+from contextlib import asynccontextmanager
 
-app = FastAPI()
+
+# Alembic configuration
+ALEMBIC_CONFIG = Config("alembic.ini")
+
+
+# Function to run migrations
+def run_migrations():
+    command.upgrade(ALEMBIC_CONFIG, "head")
+
+
+# Create a lifespan function for FastAPI
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    run_migrations()
+    print("Migrations ran successfully.")
+    yield
+    print("Application is shutting down.")
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.middleware("http")
