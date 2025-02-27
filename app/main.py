@@ -5,6 +5,8 @@ from fastapi.requests import Request
 
 from alembic import command
 from alembic.config import Config
+
+from app.config import DB_CONNECTION_STRING
 from app.database import get_db
 from sqlalchemy.orm import Session
 
@@ -18,6 +20,7 @@ from contextlib import asynccontextmanager
 
 # Alembic configuration
 ALEMBIC_CONFIG = Config("alembic.ini")
+ALEMBIC_CONFIG.set_main_option("sqlalchemy.url", DB_CONNECTION_STRING)
 
 
 # Function to run migrations
