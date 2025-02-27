@@ -19,5 +19,10 @@ COPY . .
 # Expose the application port
 EXPOSE 3001
 
+# Environment Variables
+ARG DB_CONNECTION_STRING
+ARG API_KEY
+ARG APP_ENVIRONMENT
+
 # Run the application
 CMD ["poetry", "run", "fastapi", "run", "app/main.py", "--port", "3001"]
