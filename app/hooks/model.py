@@ -1,6 +1,9 @@
 from datetime import date, datetime
+
+from jsonpath_ng.exceptions import JsonPathParserError
 from pydantic import BaseModel, ConfigDict, field_validator
 from typing import Optional, Literal
+from jsonpath_ng import parse
 
 from pydantic_core.core_schema import ValidationInfo
 
@@ -24,6 +27,13 @@ class HookBase(BaseModel):
         location = info.data["correlation_identifier_location"]
         if location == "headers" and value:
             return value.lower()
+
+        if location == "payload" and value:
+            try:
+                parse(value)
+            except JsonPathParserError:
+                raise ValueError(f"Invalid JSONPath expression: {value}")
+
         return value
 
 

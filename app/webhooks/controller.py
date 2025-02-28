@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, Request, Body, Path, Query
+from fastapi import APIRouter, Depends, Request, Path, Query
+from jsonpath_ng.exceptions import JsonPathParserError
 from sqlalchemy.orm import Session
-from app.database import get_db
+from jsonpath_ng import parse
 
+from app.database import get_db
 from .model import Webhook, WebhookListResponse, WebhookResponse
 from .repository import insert_webhook, get_by_hook_id, get_by_correlation_value
 from .webhook_id import WebhookId
@@ -42,8 +44,14 @@ async def receive_webhook(
             # Get value from headers
             correlation_value = headers.get(correlation_field, None)
         elif correlation_location == "payload":
-            # Get value from payload
-            correlation_value = payload.get(correlation_field, None)
+            try:
+                jsonpath_expr = parse(correlation_field)
+                matches = [match.value for match in jsonpath_expr.find(payload)]
+                correlation_value = (
+                    matches[0] if matches else None
+                )  # Take first match or None
+            except JsonPathParserError:
+                correlation_value = None  # Handle invalid JSONPath cases gracefully
         else:
             correlation_value = None
 
