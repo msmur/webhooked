@@ -7,7 +7,6 @@ from .repository import insert_webhook, get_by_hook_id, get_by_correlation_value
 from .webhook_id import WebhookId
 from ..hooks import HookId
 from ..hooks.repository import get_hook_or_throw
-from ..middleware.auth import verify_api_key
 
 router = APIRouter(prefix="/hooks/{hook_id}/webhooks", tags=["Webhooks"])
 
@@ -17,7 +16,6 @@ router = APIRouter(prefix="/hooks/{hook_id}/webhooks", tags=["Webhooks"])
     summary="",
     description="",
     response_model=WebhookResponse,
-    dependencies=[Depends(verify_api_key)],
 )
 async def receive_webhook(
     request: Request,
