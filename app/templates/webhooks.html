@@ -16,8 +16,6 @@
         let isLoading = false;
         const limit = 50;
 
-        let hasMore = true;
-
         function formatDate(isoString) {
             const date = new Date(isoString);
             return date.toLocaleString('en-US', {
@@ -26,7 +24,8 @@
                 day: 'numeric',
                 hour: 'numeric',
                 minute: '2-digit',
-                hour12: true
+                second: '2-digit',
+                hour12: true,
             });
         }
 
@@ -88,7 +87,7 @@
                 item.innerHTML = `
                 <strong>ID: ${webhook.id}</strong><br>
                 <i>correlation value: ${webhook.correlation_value}</i><br>
-                <i>created at: ${new Date(webhook.created_at).toLocaleString()}</i>
+                <i>created at: ${formatDate(webhook.created_at)}</i>
             `;
                 item.onclick = () => showDetails(webhook.id);
                 listPane.appendChild(item);

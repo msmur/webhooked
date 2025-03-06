@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, UTC
 
 from sqlalchemy import Column, String, Date, DateTime, Enum
 from ..database import Base
@@ -19,5 +19,9 @@ class HookEntity(Base):
     )
     correlation_identifier_field = Column(String, nullable=True)
 
-    created_at: datetime = Column(DateTime, default=datetime.now(), nullable=False)
-    updated_at: datetime = Column(DateTime, default=datetime.now(), nullable=False)
+    created_at: datetime = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at: datetime = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )

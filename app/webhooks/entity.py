@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, UTC
 from sqlalchemy import Column, String, JSON, DateTime
 
 from ..database import Base
@@ -16,5 +16,8 @@ class WebhookEntity(Base):
     correlation_value = Column(String, nullable=True, index=True)
 
     created_at: datetime = Column(
-        DateTime, default=datetime.now, nullable=False, index=True
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        nullable=False,
+        index=True,
     )
