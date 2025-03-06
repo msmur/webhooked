@@ -1,13 +1,14 @@
 from datetime import date, datetime
 
 from jsonpath_ng.exceptions import JsonPathParserError
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator, computed_field
 from typing import Optional, Literal
 from jsonpath_ng import parse
 
 from pydantic_core.core_schema import ValidationInfo
 
 from .hook_id import HookId
+from ..config import BASE_URL
 
 
 class HookBase(BaseModel):
@@ -45,5 +46,10 @@ class Hook(HookBase):
     id: HookId
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+
+    @computed_field()
+    @property
+    def webhooks_url(self) -> str:
+        return f"{BASE_URL}/api/hooks/{self.id.value}/webhooks"  # Generates the webhook URL
 
     model_config = ConfigDict(from_attributes=True)

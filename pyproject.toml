@@ -6,7 +6,7 @@ authors = [
     { name = "Maahir Ur Rahman", email = "msmaahirur@gmail.com" }
 ]
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.13,<4.0"
 dependencies = [
     "fastapi[standard] (>=0.115.7,<0.116.0)",
     "uvicorn (>=0.34.0,<0.35.0)",
@@ -18,7 +18,8 @@ dependencies = [
     "alembic (>=1.14.1,<2.0.0)",
     "jinja2 (>=3.1.5,<4.0.0)",
     "python-dotenv (>=1.0.1,<2.0.0)",
-    "jsonpath-ng (>=1.7.0,<2.0.0)"
+    "jsonpath-ng (>=1.7.0,<2.0.0)",
+    "loguru (>=0.7.3,<0.8.0)"
 ]
 
 

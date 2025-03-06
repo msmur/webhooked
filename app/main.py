@@ -1,3 +1,4 @@
+import sys
 from datetime import datetime
 from fastapi import FastAPI, Depends, Path
 from fastapi.templating import Jinja2Templates
@@ -14,8 +15,11 @@ from app.hooks import router as hooks_router
 from app.webhooks import router as webhooks_router
 from app.healthcheck import router as healthcheck_router
 from app.hooks.repository import get_all_hooks
-from app.logger import logger
+from app.logger import configure_logging
+
 from contextlib import asynccontextmanager
+
+from loguru import logger
 
 
 # Alembic configuration
@@ -26,7 +30,7 @@ ALEMBIC_CONFIG.set_main_option("sqlalchemy.url", DB_CONNECTION_STRING)
 # Function to run migrations
 def run_migrations():
     command.upgrade(ALEMBIC_CONFIG, "head")
-    print("Migrations ran successfully.")
+    logger.info("Migrations ran successfully.")
 
 
 # Create a lifespan function for FastAPI
@@ -34,7 +38,10 @@ def run_migrations():
 async def lifespan(app: FastAPI):
     run_migrations()
     yield
-    print("Application is shutting down.")
+    logger.info("Application is shutting down.")
+
+
+configure_logging()
 
 
 app = FastAPI(lifespan=lifespan)
