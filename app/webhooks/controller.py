@@ -49,7 +49,15 @@ async def sse(
         connected_clients[hook_id] = {}
     connected_clients[hook_id][client_id] = queue
 
-    return EventSourceResponse(event_generator(queue, hook_id, client_id))
+    return EventSourceResponse(
+        event_generator(queue, hook_id, client_id),
+        headers={
+            "x-accel-buffering": "no",
+            "content-type": "text/event-stream",
+            "cache-control": "no-cache",
+            "Connection": "keep-alive",
+        },
+    )
 
 
 async def notify_clients(hook_id: str, event_data: str = "New webhook received!"):
