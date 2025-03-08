@@ -1,10 +1,18 @@
-from fastapi import APIRouter, Depends, Request, Path, Query, HTTPException
+from fastapi import (
+    APIRouter,
+    Depends,
+    Request,
+    Path,
+    Query,
+    WebSocket,
+    WebSocketDisconnect,
+    BackgroundTasks,
+)
 from jsonpath_ng.exceptions import JsonPathParserError
-from sse_starlette.sse import EventSourceResponse
 from sqlalchemy.orm import Session
 from jsonpath_ng import parse
 import asyncio
-from typing import Dict
+from typing import Dict, Set
 from loguru import logger
 
 from app.database import get_db
@@ -15,6 +23,38 @@ from ..hooks import HookId
 from ..hooks.repository import get_hook_or_throw
 
 router = APIRouter(prefix="/hooks/{hook_id}/webhooks", tags=["Webhooks"])
+
+# Dictionary to track active WebSocket connections per hook ID
+active_connections: Dict[str, Set[WebSocket]] = {}
+
+
+@router.websocket("/events")
+async def websocket_endpoint(websocket: WebSocket, hook_id: str):
+    await websocket.accept()
+
+    if hook_id not in active_connections:
+        active_connections[hook_id] = set()
+    active_connections[hook_id].add(websocket)
+
+    try:
+        while True:
+            await websocket.receive_text()  # Keep the connection alive (optional)
+    except WebSocketDisconnect:
+        active_connections[hook_id].remove(websocket)
+        if not active_connections[hook_id]:
+            del active_connections[hook_id]  # Cleanup empty sets
+
+
+async def notify_websocket_clients(hook_id: str, event_type: str):
+    if hook_id in active_connections:
+        for websocket in list(
+            active_connections[hook_id]
+        ):  # Convert to list to avoid mutation issues
+            try:
+                await websocket.send_json({"event_type": event_type})
+            except WebSocketDisconnect:
+                active_connections[hook_id].remove(websocket)
+
 
 # connected_clients: Dict[str, Dict[str, asyncio.Queue]] = {}
 #
@@ -82,6 +122,7 @@ router = APIRouter(prefix="/hooks/{hook_id}/webhooks", tags=["Webhooks"])
 )
 async def receive_webhook(
     request: Request,
+    background_tasks: BackgroundTasks,
     hook_id: str = Path(..., title="The Hook ID"),
     db: Session = Depends(get_db),
 ) -> WebhookResponse:
@@ -127,6 +168,7 @@ async def receive_webhook(
     saved_webhook = insert_webhook(db, webhook_data)
 
     # asyncio.create_task(notify_clients(hook_id))
+    background_tasks.add_task(notify_websocket_clients, hook_id, "new_webhook")
 
     return WebhookResponse(
         id=saved_webhook.id,

@@ -16,6 +16,22 @@
         let isLoading = false;
         const limit = 50;
 
+        const hookId = "{{ hook_id }}";
+        const wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+        const ws = new WebSocket(`${wsProtocol}${window.location.host}/api/hooks/${hookId}/webhooks/events`);
+
+        ws.onmessage = (event) => {
+            const webhookData = JSON.parse(event.data);
+            if (webhookData.event_type === "new_webhook") {
+                    const button = document.getElementById("new-webhooks-button");
+                    button.style.display = "block";
+            }
+        };
+
+        ws.onclose = () => {
+            console.warn("WebSocket closed unexpectedly.");
+        };
+
         // const eventSource = new EventSource(`/api/hooks/{{ hook_id }}/webhooks/${generateClientId()}/events`);
         //
         // eventSource.onopen = function(event) {
