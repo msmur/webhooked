@@ -1,15 +1,15 @@
-import psycopg2
 import os
+import psycopg2
 from dotenv import load_dotenv
 
 # Load environment variables from .env
+load_dotenv()
+DB_CONNECTION_STRING = os.environ.get("DB_CONNECTION_STRING")
+
 # SQL query to delete records older than 48 hours
 DELETE_QUERY = """
     DELETE FROM webhooks WHERE created_at < NOW() - INTERVAL '48 hours';
 """
-
-load_dotenv()
-DB_CONNECTION_STRING = os.environ.get("DB_CONNECTION_STRING")
 
 
 def cleanup_old_webhooks():
@@ -20,7 +20,8 @@ def cleanup_old_webhooks():
         cursor = conn.cursor()
 
         cursor.execute(DELETE_QUERY)
-        print("Old webhook entries deleted successfully.")
+        deleted_rows = cursor.rowcount  # Get number of rows affected
+        print(f"Deleted {deleted_rows} old webhook entries successfully.")
 
         # Close the connection
         cursor.close()
