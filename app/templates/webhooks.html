@@ -16,23 +16,25 @@
         let isLoading = false;
         const limit = 50;
 
-        const eventSource = new EventSource(`/api/hooks/{{ hook_id }}/webhooks/${generateClientId()}/events`);
-
-        eventSource.onopen = function(event) {
-        };
-
-        eventSource.onmessage = function(event) {
-            const button = document.getElementById("new-webhooks-button");
-            button.style.display = "block";
-        };
-
-        eventSource.onerror = function(error) {
-            eventSource.close();
-        };
-
-        function generateClientId() {
-            return 'client-' + Date.now() + '-' + Math.random().toString(36).substring(2, 15);
-        }
+        // const eventSource = new EventSource(`/api/hooks/{{ hook_id }}/webhooks/${generateClientId()}/events`);
+        //
+        // eventSource.onopen = function(event) {
+        //     console.log("Event source opened");
+        // };
+        //
+        // eventSource.onmessage = function(event) {
+        //     const button = document.getElementById("new-webhooks-button");
+        //     button.style.display = "block";
+        // };
+        //
+        // eventSource.onerror = function(error) {
+        //     console.log("Event source error:", error);
+        //     eventSource.close();
+        // };
+        //
+        // function generateClientId() {
+        //     return 'client-' + Date.now() + '-' + Math.random().toString(36).substring(2, 15);
+        // }
 
         function formatDate(isoString) {
             const date = new Date(isoString);
@@ -124,7 +126,9 @@
             webhooks.length = 0;  // Clear webhooks list on new search
             // Hide the "New webhooks available!" button
             const button = document.getElementById("new-webhooks-button");
-            button.style.display = "none";
+            if (button.style.display === "block") {
+                button.style.display = "none";
+            }
             searchTerm = document.getElementById('search-box').value;
             await loadMoreWebhooks(searchTerm);
         }
