@@ -16,6 +16,24 @@
         let isLoading = false;
         const limit = 50;
 
+        const eventSource = new EventSource(`/api/hooks/{{ hook_id }}/webhooks/${generateClientId()}/events`);
+
+        eventSource.onopen = function(event) {
+        };
+
+        eventSource.onmessage = function(event) {
+            const button = document.getElementById("new-webhooks-button");
+            button.style.display = "block";
+        };
+
+        eventSource.onerror = function(error) {
+            eventSource.close();
+        };
+
+        function generateClientId() {
+            return 'client-' + Date.now() + '-' + Math.random().toString(36).substring(2, 15);
+        }
+
         function formatDate(isoString) {
             const date = new Date(isoString);
             return date.toLocaleString('en-US', {
@@ -104,6 +122,9 @@
         async function searchWebhooks() {
             page = 1;  // Reset pagination for search
             webhooks.length = 0;  // Clear webhooks list on new search
+            // Hide the "New webhooks available!" button
+            const button = document.getElementById("new-webhooks-button");
+            button.style.display = "none";
             searchTerm = document.getElementById('search-box').value;
             await loadMoreWebhooks(searchTerm);
         }
@@ -137,6 +158,10 @@
             });
 
             document.getElementById('search-box').addEventListener('input', debouncedSearch);
+
+            document.getElementById('new-webhooks-button').addEventListener('click', function () {
+                location.reload();
+            });
 
             await loadMoreWebhooks();  // Load webhooks on page load
         });
@@ -205,12 +230,33 @@
             border-radius: 4px;
             border: 1px solid #ccc;
         }
+
+        #new-webhooks-button {
+            display: none; /* Initially hidden */
+            width: 100%; /* Take available space */
+            text-align: center;
+            background-color: #90caf9; /* Light blue color */
+            color: white;
+            font-weight: bold;
+            padding: 10px;
+            margin: 10px auto;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+
+        #new-webhooks-button:hover {
+            background-color: #64b5f6; /* Slightly darker blue on hover */
+        }
     </style>
 </head>
 <body>
 
 <div id="list-pane">
-    <h2>Webhooks</h2>
+    <h2>Webhooks for {{hook_name}}</h2>
+    <button id="new-webhooks-button" title="New webhooks have been sent to this hook! Please refresh the page to view them">
+        New webhooks available! Click to refresh
+    </button>
     <label for="search-box"></label>
     <input type="text" id="search-box" placeholder="Search Webhooks by Correlation Value"/>
     <p id="webhook-count">Showing 0 of 0 webhooks</p>

@@ -176,3 +176,5 @@ cython_debug/
 # Idea and Docker
 .idea/
 .docker/
+
+.bruno/node_modules

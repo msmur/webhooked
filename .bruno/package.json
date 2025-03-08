@@ -1,0 +1,7 @@
+{
+  "name": "webhooked",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@faker-js/faker": "^9.6.0"
+  }
+}

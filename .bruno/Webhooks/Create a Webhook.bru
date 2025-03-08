@@ -1,0 +1,55 @@
+meta {
+  name: Create a Webhook
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{host}}/api/hooks/:hook_id/webhooks
+  body: none
+  auth: none
+}
+
+params:path {
+  hook_id: {{hook_id}}
+}
+
+script:pre-request {
+  const { faker } = require('@faker-js/faker')
+  
+  const requestData = {
+    data: {
+      id: faker.string.ulid()
+    },
+    user: {
+      id: faker.string.uuid(),
+      name: faker.person.fullName(),
+      email: faker.internet.email(),
+      address: {
+        street: faker.location.streetAddress(),
+        city: faker.location.city(),
+        country: faker.location.country(),
+      },
+    },
+    order: {
+      id: faker.string.uuid(),
+      date: faker.date.past().toISOString(),
+      items: [
+        {
+          id: faker.string.uuid(),
+          name: faker.commerce.productName(),
+          price: faker.commerce.price(),
+          quantity: faker.number.int({ min: 1, max: 5 }),
+        },
+        {
+          id: faker.string.uuid(),
+          name: faker.commerce.productName(),
+          price: faker.commerce.price(),
+          quantity: faker.number.int({ min: 1, max: 5 }),
+        },
+      ],
+    },
+  };
+  
+  req.setBody(requestData);
+}
