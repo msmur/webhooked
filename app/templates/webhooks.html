@@ -32,26 +32,6 @@
             console.warn("WebSocket closed unexpectedly.");
         };
 
-        // const eventSource = new EventSource(`/api/hooks/{{ hook_id }}/webhooks/${generateClientId()}/events`);
-        //
-        // eventSource.onopen = function(event) {
-        //     console.log("Event source opened");
-        // };
-        //
-        // eventSource.onmessage = function(event) {
-        //     const button = document.getElementById("new-webhooks-button");
-        //     button.style.display = "block";
-        // };
-        //
-        // eventSource.onerror = function(error) {
-        //     console.log("Event source error:", error);
-        //     eventSource.close();
-        // };
-        //
-        // function generateClientId() {
-        //     return 'client-' + Date.now() + '-' + Math.random().toString(36).substring(2, 15);
-        // }
-
         function formatDate(isoString) {
             const date = new Date(isoString);
             return date.toLocaleString('en-US', {
