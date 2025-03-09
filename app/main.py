@@ -1,4 +1,3 @@
-from datetime import datetime
 from fastapi import FastAPI, Depends, Path
 from fastapi.templating import Jinja2Templates
 from fastapi.requests import Request

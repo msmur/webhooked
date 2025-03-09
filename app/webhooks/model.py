@@ -31,7 +31,7 @@ class WebhookListResponse(BaseModel):
     has_more: bool
 
 
-class WebhookResponse(BaseModel):
+class WebhookedSavedResponse(BaseModel):
     id: WebhookId
     hook_id: HookId
     correlation_value: Optional[str] = None

@@ -11,13 +11,17 @@ from fastapi import (
 from jsonpath_ng.exceptions import JsonPathParserError
 from sqlalchemy.orm import Session
 from jsonpath_ng import parse
-import asyncio
 from typing import Dict, Set
 from loguru import logger
 
 from app.database import get_db
-from .model import Webhook, WebhookListResponse, WebhookResponse
-from .repository import insert_webhook, get_by_hook_id, get_by_correlation_value
+from .model import Webhook, WebhookListResponse, WebhookedSavedResponse
+from .repository import (
+    insert_webhook,
+    get_by_hook_id,
+    get_by_correlation_value,
+    get_latest_for_hook,
+)
 from .webhook_id import WebhookId
 from ..hooks import HookId
 from ..hooks.repository import get_hook_or_throw
@@ -60,14 +64,14 @@ async def notify_websocket_clients(hook_id: str, event_type: str):
     "",
     summary="",
     description="",
-    response_model=WebhookResponse,
+    response_model=WebhookedSavedResponse,
 )
 async def receive_webhook(
     request: Request,
     background_tasks: BackgroundTasks,
     hook_id: str = Path(..., title="The Hook ID"),
     db: Session = Depends(get_db),
-) -> WebhookResponse:
+) -> WebhookedSavedResponse:
     """Receives a webhook and stores it in the database"""
     hook = get_hook_or_throw(hook_id, db)
 
@@ -112,7 +116,7 @@ async def receive_webhook(
     # asyncio.create_task(notify_clients(hook_id))
     background_tasks.add_task(notify_websocket_clients, hook_id, "new_webhook")
 
-    return WebhookResponse(
+    return WebhookedSavedResponse(
         id=saved_webhook.id,
         hook_id=saved_webhook.hook_id,
         correlation_value=saved_webhook.correlation_value,
@@ -125,23 +129,13 @@ def get_webhooks(
     hook_id: str,
     page: int = Query(1, ge=1),
     limit: int = Query(10, le=100),
-    search: str = Query(None, min_length=1),
+    correlation_value: str = Query(None, min_length=1, alias="search"),
     db: Session = Depends(get_db),
 ) -> WebhookListResponse:
     """Fetch paginated webhooks for a given hook"""
-    return get_by_hook_id(hook_id, page, limit, search, db)
+    return get_by_hook_id(hook_id, page, limit, correlation_value, db)
 
 
-@router.get(
-    "/{correlation_value}",
-    summary="",
-    description="",
-    response_model=list[Webhook],
-)
-def get_webhooks_by_correlation_value(
-    hook_id: str,
-    correlation_value: str,
-    db: Session = Depends(get_db),
-) -> list[Webhook]:
-    """Fetch paginated webhook by a correlation value"""
-    return get_by_correlation_value(hook_id, correlation_value, db)
+@router.get("/latest", summary="", description="", response_model=Webhook)
+def get_latest_webhook(hook_id: str, db: Session = Depends(get_db)) -> Webhook:
+    return get_latest_for_hook(hook_id, db)

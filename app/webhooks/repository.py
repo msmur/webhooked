@@ -16,12 +16,14 @@ def insert_webhook(db: Session, webhook: Webhook) -> Webhook:
 
 
 def get_by_hook_id(
-    hook_id: str, page: int, limit: int, search: str | None, db: Session
+    hook_id: str, page: int, limit: int, correlation_value: str | None, db: Session
 ) -> WebhookListResponse:
     query = db.query(WebhookEntity).filter(WebhookEntity.hook_id == hook_id)
 
-    if search:
-        query = query.filter(WebhookEntity.correlation_value.icontains(search))
+    if correlation_value:
+        query = query.filter(
+            WebhookEntity.correlation_value.icontains(correlation_value)
+        )
 
     total_count = query.count()
 
