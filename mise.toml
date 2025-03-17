@@ -1,4 +1,4 @@
 [tools]
 node = "22"
-poetry = "latest"
 python = "3.13"
+uv = "latest"

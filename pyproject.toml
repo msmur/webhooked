@@ -2,11 +2,9 @@
 name = "webhooked"
 version = "0.1.0"
 description = ""
-authors = [
-    { name = "Maahir Ur Rahman", email = "msmaahirur@gmail.com" }
-]
-readme = "README.md"
+authors = [{ name = "Maahir Ur Rahman", email = "msmaahirur@gmail.com" }]
 requires-python = ">=3.13,<4.0"
+readme = "README.md"
 dependencies = [
     "fastapi[standard] (>=0.115.7,<0.116.0)",
     "uvicorn (>=0.34.0,<0.35.0)",
@@ -23,16 +21,13 @@ dependencies = [
     "sse-starlette (>=2.2.1,<3.0.0)",
 ]
 
-
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.group.dev.dependencies]
-black = "^24.10.0"
-flake8 = "^7.1.1"
-isort = "^5.13.2"
-requests = "^2.32.3"
+[dependency-groups]
+dev = [
+    "black>=24.10.0,<25",
+    "flake8>=7.1.1,<8",
+    "isort>=5.13.2,<6",
+    "requests>=2.32.3,<3",
+]
 
 [tool.isort]
 profile = "black"
