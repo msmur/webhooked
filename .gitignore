@@ -178,3 +178,5 @@ cython_debug/
 .docker/
 
 .bruno/node_modules
+
+load_test.js

@@ -12,12 +12,11 @@ post {
 
 body:json {
   {
-      "name": "Test - {{name}}",
-      "description": "test",
+      "name": "Test Hook",
+      "description": "Webhooked for Testing",
       "status": "ACTIVE",
-      "expires_at": "2025-12-31",
       "correlation_identifier_location": "payload",
-      "correlation_identifier_field": "data.id"
+      "correlation_identifier_field": "id"
   }
 }
 
